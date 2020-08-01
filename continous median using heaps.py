@@ -1,0 +1,111 @@
+# Do not edit the class below except for
+# the insert method. Feel free to add new
+# properties and methods to the class.
+class ContinuousMedianHandler:
+    def __init__(self):
+        # Write your code here.
+        self.median = None
+		self.lowers = Heap(MAX_HEAP_FUNC, [])
+		self.greaters = Heap(MIN_HEAP_FUNC, [])
+
+    def insert(self, number):
+        # Write your code here.
+        if not self.lowers.length or number < self.lowers.peek():
+			self.lowers.insert(number)
+		else:
+			self.greaters.insert(number)
+		self.rebalanceHeaps()
+		self.updateMedian()
+		
+	def rebalanceHeaps(self):
+		if self.lowers.length - self.greaters.length == 2:
+			self.greaters.insert(self.lowers.remove())
+		elif self.greaters.length - self.lowers.length == 2:
+			self.lowers.insert(self.greaters.remove())
+			
+	def updateMedian(self):
+		if self.lowers.length > self.greaters.length:
+			self.median = self.lowers.peek()
+		elif self.lowers.length < self.greaters.length:
+			self.median = self.greaters.peek()
+		else:
+			self.median = (self.lowers.peek() + self.greaters.peek())/2
+
+    def getMedian(self):
+        return self.median
+	
+class Heap:
+    def __init__(self, comparisonFunc, array):
+        # Do not edit the line below.
+		self.comparisonFunc = comparisonFunc
+        self.heap = self.buildHeap(array)
+		self.length = len(self.heap)
+
+    def buildHeap(self, array):
+        # Write your code here.
+		firstParentIdx = (len(array) - 2) // 2
+		for i in reversed(range(firstParentIdx + 1)):
+			self.siftDown(i, len(array) - 1, array)
+		return array
+        
+
+    def siftDown(self, currentIdx, targetIdx, heap):
+        # Write your code here.
+		childOne = currentIdx * 2 + 1
+        while childOne <= targetIdx:
+			childTwo = currentIdx * 2 + 2 if currentIdx * 2 + 2 <= targetIdx else -1
+			if childTwo != -1:
+				if self.comparisonFunc(heap[childTwo], heap[childOne]):
+					idxToSwap = childTwo
+				else:
+					idxToSwap = childOne	
+			else:
+				idxToSwap = childOne
+			if self.comparisonFunc(heap[idxToSwap], heap[currentIdx]):
+				self.swap(currentIdx, idxToSwap, heap)
+				currentIdx = idxToSwap
+				childOne = currentIdx * 2 + 1
+			else:
+				return		
+
+    def siftUp(self, currentIdx, heap):
+        # Write your code here.
+		i = (currentIdx - 1) // 2
+		while i >= 0:
+			if self.comparisonFunc(heap[currentIdx], heap[i]):
+				self.swap(currentIdx, i, heap)
+				currentIdx = i
+				i = (currentIdx - 1) // 2
+			else:
+				return
+        
+
+    def peek(self):
+        # Write your code here.
+        return self.heap[0]
+
+    def remove(self):
+        # Write your code here.
+        self.swap(0, len(self.heap) - 1, self.heap)
+		removedValue = self.heap.pop()
+		self.length -= 1
+		self.siftDown(0, len(self.heap) - 1, self.heap)
+		return removedValue
+		
+
+    def insert(self, value):
+        # Write your code here.
+        self.heap.append(value)
+		self.length += 1
+		self.siftUp(len(self.heap) - 1, self.heap)
+	
+	def swap(self, i, j, heap):
+		heap[i], heap[j] = heap[j], heap[i]
+
+def MAX_HEAP_FUNC(a, b):
+	return a > b
+
+def MIN_HEAP_FUNC(a, b):
+	return a < b
+	
+
